@@ -5,6 +5,8 @@ import { connect } from "cloudflare:sockets";
  * Handles real-time binary streams from remote sensor nodes.
  */
 
+const CURRENT_VERSION = "2.1.0";
+
 const getAlpha = () => String.fromCharCode(118, 108, 101, 115, 115);
 const getBeta = () => String.fromCharCode(116, 114, 111, 106, 97, 110);
 const getGamma = () => String.fromCharCode(99, 108, 97, 115, 104);
@@ -31,6 +33,7 @@ const SYSTEM_DEFAULTS = {
     cfApiToken: "",
     isPaused: false,
     silentAlerts: false,
+    githubRepo: "itsyebekhe/nahan",
     users: [],
 };
 
@@ -308,6 +311,7 @@ async function handleAuth(request, hostName, ctx, env) {
             for(let [k,v] of uuidUsage.entries()) usageData[k] = v;
             return new Response(JSON.stringify({
                 success: true, config: sysConfig, deviceId: activeDeviceId, network: netInfo, usage: usageData, sysUsage: (sysUsageCache && sysUsageCache.users) ? sysUsageCache.users : {},
+                version: CURRENT_VERSION,
                 profiles: getAllProfiles().map(p => ({
                     name: p.name,
                     id: p.id,
@@ -732,10 +736,11 @@ function getDashboardUI(hasDB) {
       </style>
   </head>
   <body class="bg-slate-50 dark:bg-darkbg text-slate-800 dark:text-slate-200 h-[100dvh] flex flex-col md:flex-row overflow-hidden selection:bg-primary selection:text-white transition-colors duration-300">
-  
+
       <!-- Global Controls -->
       <div class="fixed top-4 end-4 md:top-6 md:end-6 flex items-center space-x-2 space-x-reverse z-50">
-          <a href="https://github.com/itsyebekhe/nahan" target="_blank" class="p-2 bg-white/80 dark:bg-darkcard/80 backdrop-blur rounded-full shadow border border-slate-200 dark:border-darkborder text-slate-600 dark:text-slate-400 hover:text-primary transition-all">
+          <span id="top-version-badge" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-full text-[11px] font-mono font-bold border border-slate-200 dark:border-darkborder shadow-sm">v2.1.0</span>
+          <a href="https://github.com/itsyebekhe/nahan" id="github-link-btn" target="_blank" class="p-2 bg-white/80 dark:bg-darkcard/80 backdrop-blur rounded-full shadow border border-slate-200 dark:border-darkborder text-slate-600 dark:text-slate-400 hover:text-primary transition-all">
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
           </a>
           <button onclick="toggleLang()" id="lang-toggle" class="px-3 py-1 bg-white/80 dark:bg-darkcard/80 backdrop-blur rounded-full shadow border border-slate-200 dark:border-darkborder font-bold text-sm">EN</button>
@@ -747,14 +752,14 @@ function getDashboardUI(hasDB) {
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
           </button>
       </div>
-  
+
       <!-- LOGIN SCREEN -->
       <div id="login-box" class="absolute inset-0 flex items-center justify-center p-4 z-40 bg-slate-50 dark:bg-darkbg">
           <div class="absolute top-1/4 start-1/4 w-64 h-64 bg-primary/20 rounded-full blur-3xl -z-10"></div>
           <div class="max-w-md w-full bg-white/90 dark:bg-darkcard/90 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/40 dark:border-slate-700/50">
               <div class="text-center mb-8">
                   <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-primary mb-4">
-                      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path></svg>
+                       <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path></svg>
                   </div>
                   <h2 class="text-3xl font-black text-slate-800 dark:text-white" data-i18n="title">Nahan Gateway</h2>
               </div>
@@ -764,7 +769,7 @@ function getDashboardUI(hasDB) {
               <p id="err-msg" class="text-red-500 text-sm mt-4 hidden text-center font-bold" data-i18n="err_pass">Invalid Key</p>
           </div>
       </div>
-  
+
       <!-- DASHBOARD CONTAINER -->
       <div id="dash-box" class="hidden w-full h-full flex-col md:flex-row relative">
           
@@ -772,7 +777,10 @@ function getDashboardUI(hasDB) {
           <aside class="hidden md:flex w-64 bg-white dark:bg-darkcard border-e border-slate-200 dark:border-darkborder flex-col z-20 shrink-0">
               <div class="flex items-center p-6 border-b border-slate-100 dark:border-darkborder/50">
                   <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/40 text-primary flex items-center justify-center me-3 shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
-                  <h1 class="font-black text-xl" data-i18n="title">Nahan</h1>
+                  <div class="flex flex-col">
+                      <h1 class="font-black text-xl leading-none" data-i18n="title">Nahan</h1>
+                      <span id="app-version" class="text-[10px] font-mono text-slate-400 mt-1 font-semibold">v2.1.0</span>
+                  </div>
               </div>
               <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
                   <button onclick="switchTab('info')" id="tab-info" class="nav-item active flex items-center w-full px-4 py-3 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 group">
@@ -817,7 +825,26 @@ function getDashboardUI(hasDB) {
               <!-- Scrollable Content -->
               <div class="flex-1 overflow-y-auto p-4 md:p-10">
                   <div class="max-w-4xl mx-auto space-y-6 fade-in">
-                      
+
+                      <!-- Update Banner -->
+                      <div id="update-alert-banner" class="hidden bg-gradient-to-r from-amber-500/10 to-primary/10 border-2 border-amber-300 dark:border-amber-950/20 rounded-3xl p-6 shadow-md flex-col sm:flex-row items-center justify-between gap-4 fade-in">
+                          <div class="flex items-center space-x-4 space-x-reverse text-start w-full">
+                              <div class="p-3 bg-amber-500/10 text-amber-500 rounded-2xl shrink-0">
+                                  <svg class="w-6 h-6 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13l-3 3m0 0l-3-3m3 3V8m0 13a9 9 0 110-18 9 9 0 010 18z"></path></svg>
+                              </div>
+                              <div>
+                                  <h4 class="font-black text-amber-800 dark:text-amber-400 text-base" data-i18n="update_avail">New version available!</h4>
+                                  <p id="update-alert-text" class="text-xs text-slate-500 dark:text-slate-400 mt-1"></p>
+                              </div>
+                          </div>
+                          <div class="flex gap-2 w-full sm:w-auto shrink-0 justify-end">
+                              <button onclick="dismissUpdate()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs transition-colors" data-i18n="btn_cancel">Cancel</button>
+                              <a id="update-alert-btn" href="https://github.com/itsyebekhe/nahan" target="_blank" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-1.5" data-i18n="update_btn">
+                                  Get Latest Code ➜
+                              </a>
+                          </div>
+                      </div>
+
                       <!-- INFO VIEW -->
                       <div id="view-info" class="space-y-6 block">
                           <div id="dyn-profiles-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -911,6 +938,10 @@ function getDashboardUI(hasDB) {
                               <div class="space-y-1">
                                   <label class="block text-sm font-bold text-slate-600 dark:text-slate-300 ms-1" data-i18n="lbl_pass">Master Key</label>
                                   <input type="text" id="cfg-pass" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-darkborder bg-slate-50 dark:bg-slate-800 focus:border-primary outline-none">
+                              </div>
+                              <div class="space-y-1 md:col-span-2 font-mono">
+                                  <label class="block text-sm font-bold text-slate-600 dark:text-slate-300 ms-1" data-i18n="lbl_github_repo">GitHub Update Repository</label>
+                                  <input type="text" id="cfg-github-repo" placeholder="itsyebekhe/nahan" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-darkborder bg-slate-50 dark:bg-slate-800 focus:border-primary outline-none text-sm">
                               </div>
   
                               <!-- Import/Export Config Area -->
@@ -1173,7 +1204,8 @@ function getDashboardUI(hasDB) {
                   tbl_name: "Name", tbl_uuid: "UUID", tbl_traffic: "Traffic (Used / Limit)", tbl_exp: "Expiration", tbl_action: "Action", no_users: "No users found. Create one above.",
                   modal_add_title: "Add New User", lbl_u_name: "Name (Required)", lbl_u_gb: "Traffic Limit (GB) - Optional", lbl_u_days: "Duration (Days) - Optional", btn_cancel: "Cancel", btn_confirm: "Add User",
                   save_btn: "Update Config", msg_saving: "Syncing...", msg_saved: "Success! Reloading...", msg_err: "Sync Error",
-                  backup_restore_title: "Backup & Restore", ping_test_title: "Latency Diagnostics", ping_test_desc: "Test response time to your active node target."
+                  backup_restore_title: "Backup & Restore", ping_test_title: "Latency Diagnostics", ping_test_desc: "Test response time to your active node target.",
+                  lbl_github_repo: "GitHub Update Repository", update_avail: "New version available!", update_btn: "Get Latest Code"
               },
               fa: {
                   title: "دروازه نهان", pass_ph: "کلید اصلی", login_btn: "ورود به سیستم", err_pass: "دسترسی مسدود شد", missing_db: "⚠️ فضای IOT_DB یافت نشد! تنظیمات ذخیره نمی‌شوند.",
@@ -1191,7 +1223,8 @@ function getDashboardUI(hasDB) {
                   tbl_name: "نام", tbl_uuid: "شناسه یکتا", tbl_traffic: "ترافیک (مصرفی/محدودیت)", tbl_exp: "انقضا", tbl_action: "عملیات", no_users: "کاربری یافت نشد. از دکمه بالا یک کاربر ایجاد کنید.",
                   modal_add_title: "افزودن کاربر جدید", lbl_u_name: "نام (الزامی)", lbl_u_gb: "محدودیت ترافیک (گیگابایت) - اختیاری", lbl_u_days: "مدت زمان اعتبار (روز) - اختیاری", btn_cancel: "انصراف", btn_confirm: "افزودن کاربر",
                   save_btn: "ذخیره تنظیمات", msg_saving: "در حال ثبت...", msg_saved: "موفق! در حال بارگذاری...", msg_err: "خطای ارتباط",
-                  backup_restore_title: "پشتیبان‌گیری و بازیابی", ping_test_title: "عیب‌یابی تاخیر شبکه", ping_test_desc: "تاخیر پاسخ‌دهی را به آی‌پی تمیز فعال اندازه بگیرید."
+                  backup_restore_title: "پشتیبان‌گیری و بازیابی", ping_test_title: "عیب‌یابی تاخیر شبکه", ping_test_desc: "تاخیر پاسخ‌دهی را به آی‌پی تمیز فعال اندازه بگیرید.",
+                  lbl_github_repo: "مخزن گیت‌هاب جهت آپدیت", update_avail: "بروزرسانی جدید در دسترس است!", update_btn: "دریافت آخرین کد"
               }
           };
   
@@ -1336,7 +1369,8 @@ function getDashboardUI(hasDB) {
                   enableOpt1: el('cfg-tfo').checked, enableOpt2: el('cfg-ech').checked,
                   tgToken: el('cfg-tg-token').value, tgChatId: el('cfg-tg-chat').value,
                   cfAccountId: el('cfg-cf-acc').value, cfApiToken: el('cfg-cf-token').value,
-                  isPaused: el('cfg-pause').checked, silentAlerts: el('cfg-silent').checked
+                  isPaused: el('cfg-pause').checked, silentAlerts: el('cfg-silent').checked,
+                  githubRepo: el('cfg-github-repo').value
               };
               const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
               const dlAnchor = document.createElement('a');
@@ -1370,6 +1404,7 @@ function getDashboardUI(hasDB) {
                       mapId('cfg-tg-chat', conf.tgChatId);
                       mapId('cfg-cf-acc', conf.cfAccountId);
                       mapId('cfg-cf-token', conf.cfApiToken);
+                      mapId('cfg-github-repo', conf.githubRepo);
                       
                       if (conf.enableOpt1 !== undefined) document.getElementById('cfg-tfo').checked = conf.enableOpt1;
                       if (conf.enableOpt2 !== undefined) document.getElementById('cfg-ech').checked = conf.enableOpt2;
@@ -1460,11 +1495,13 @@ function getDashboardUI(hasDB) {
                       document.getElementById('cfg-cf-token').value = conf.cfApiToken || '';
                       document.getElementById('cfg-pause').checked = conf.isPaused || false;
                       document.getElementById('cfg-silent').checked = conf.silentAlerts || false;
+                      document.getElementById('cfg-github-repo').value = conf.githubRepo || 'itsyebekhe/nahan';
   
                       window.nahanConfig = JSON.parse(JSON.stringify(conf));
                       window.nahanUsage = data.sysUsage || {};
                       window.nahanProfiles = data.profiles || [];
                       renderUsersTable();
+                      try { checkUpdate(); } catch(ue) { console.error(ue); }
 
                       ['cfg-proto','cfg-port','cfg-fp','cfg-ips','cfg-path', 'cfg-relay'].forEach(id => {
                           const el = document.getElementById(id);
@@ -1542,7 +1579,8 @@ function getDashboardUI(hasDB) {
                       enableOpt1: el('cfg-tfo').checked, enableOpt2: el('cfg-ech').checked,
                       tgToken: el('cfg-tg-token').value, tgChatId: el('cfg-tg-chat').value,
                       cfAccountId: el('cfg-cf-acc').value, cfApiToken: el('cfg-cf-token').value,
-                      isPaused: el('cfg-pause').checked, silentAlerts: el('cfg-silent').checked
+                      isPaused: el('cfg-pause').checked, silentAlerts: el('cfg-silent').checked,
+                      githubRepo: el('cfg-github-repo').value
                   }
               };
               const stat = el('save-status'); stat.textContent = i18n[lang].msg_saving; stat.className = "text-sm font-bold text-primary animate-pulse md:me-4";
@@ -1661,6 +1699,70 @@ function getDashboardUI(hasDB) {
                   }
               } catch(e) {}
               btn.innerText = origText;
+          }
+
+          async function checkUpdate() {
+              let repo = document.getElementById('cfg-github-repo')?.value || window.nahanConfig?.githubRepo || 'itsyebekhe/nahan';
+              repo = repo.replace(/https:\\/\\/github\\.com\\//, '').trim();
+              if (!repo) return;
+              
+              try {
+                  let remoteVer = null;
+                  try {
+                      const res = await fetch('https://raw.githubusercontent.com/' + repo + '/main/version');
+                      if (res.ok) {
+                          const txt = await res.text();
+                          if (txt && txt.trim().length <= 15) {
+                              remoteVer = txt.trim();
+                          }
+                      }
+                  } catch(e) {}
+                  
+                  if (!remoteVer) {
+                      const res = await fetch('https://raw.githubusercontent.com/' + repo + '/main/_worker.js');
+                      if (res.ok) {
+                          const code = await res.text();
+                          const match = code.match(/const\\s+CURRENT_VERSION\\s*=\\s*["\']([^"\']+)["\']/);
+                          if (match && match[1]) {
+                              remoteVer = match[1];
+                          }
+                      }
+                  }
+                  
+                  if (remoteVer) {
+                      const strip = v => v.replace(/^v/, '').trim();
+                      const rVer = strip(remoteVer);
+                      const cVer = strip("2.1.0");
+                      
+                      if (rVer && rVer !== cVer) {
+                          showUpdateBanner(repo, rVer);
+                      }
+                  }
+              } catch(err) {
+                  console.error("Update check failed:", err);
+              }
+          }
+          
+          function showUpdateBanner(repo, version) {
+              const banner = document.getElementById('update-alert-banner');
+              if (!banner) return;
+              
+              const msg = lang === 'fa' 
+                  ? 'نسخه جدیدتر (v' + version + ') در مخزن گیت\u200cهاب شما (' + repo + ') در دسترس است.' 
+                  : 'A newer version (v' + version + ') is available in your GitHub repository (' + repo + ').';
+                  
+              document.getElementById('update-alert-text').textContent = msg;
+              document.getElementById('update-alert-btn').href = 'https://github.com/' + repo;
+              banner.classList.remove('hidden');
+              banner.classList.add('flex');
+          }
+          
+          function dismissUpdate() {
+              const b = document.getElementById('update-alert-banner');
+              if (b) {
+                  b.classList.remove('flex');
+                  b.classList.add('hidden');
+              }
           }
 
           document.addEventListener('DOMContentLoaded', () => {
