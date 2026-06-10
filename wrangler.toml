@@ -1,6 +1,5 @@
 name = "find-home"
 main = "worker.js"
-type = "javascript"
 compatibility_date = "2026-06-10"
 
 [[d1_databases]]
@@ -10,15 +9,8 @@ database_id = "552bc85f-bb96-4c51-8743-839967442fc7"
 
 [observability]
 enabled = false
-head_sampling_rate = 1
 
 [observability.logs]
 enabled = true
-head_sampling_rate = 1
 persist = true
 invocation_logs = true
-
-[observability.traces]
-enabled = false
-persist = true
-head_sampling_rate = 1
