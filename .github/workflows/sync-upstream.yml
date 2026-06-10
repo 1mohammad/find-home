@@ -2,7 +2,7 @@ name: Sync Upstream
 
 on:
   schedule:
-    - cron: '0 * * * *' # Runs every hour. Adjust if you want it less frequent.
+    - cron: '0 * * * *' 
   workflow_dispatch: # Allows you to trigger it manually from the GitHub UI.
 
 jobs:
@@ -12,16 +12,16 @@ jobs:
       - name: Checkout target repo
         uses: actions/checkout@v4
         with:
-          ref: main # The branch on your fork you want to update
+          ref: main
+          fetch-depth: 0
 
-      - name: Sync upstream changes
-        uses: aormsby/Fork-Sync-With-Upstream-action@v3.4.1
-        with:
-          target_sync_branch: main
-          # Replace with the original owner/repository name
-          upstream_repository: ORIGINAL_OWNER/ORIGINAL_REPOSITORY 
-          upstream_sync_branch: main
-          target_repo_token: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub
-
-          # Set to true if you want to force overwrite local changes if a conflict occurs
-          test_mode: false
+      - name: Sync upstream _worker.js into worker.js
+        run: |
+          git remote add upstream https://github.com/itsyebekhe/nahan.git
+          git fetch upstream main
+          git show upstream/main:_worker.js > worker.js
+          git add worker.js
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: sync upstream _worker.js into worker.js" --allow-empty
+          git push origin main
