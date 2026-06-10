@@ -4,8 +4,8 @@ compatibility_date = "2026-06-10"
 
 [[d1_databases]]
 binding = "IOT_DB"
-database_name = "iot_db"
-database_id = "552bc85f-bb96-4c51-8743-839967442fc7"
+database_name = "mk_db"
+database_id = "d1fe63d8-733b-446f-ba72-38c464f3c71b"
 
 [observability]
 enabled = false
