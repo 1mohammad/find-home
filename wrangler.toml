@@ -3,3 +3,8 @@ main = "worker.js"
 type = "javascript"
 compatibility_date = "2026-06-10"
 workers_dev = true
+
+[[d1_databases]]
+binding = "IOT_DB"
+database_name = "iot_db"
+database_id = "552bc85f-bb96-4c51-8743-839967442fc7"
