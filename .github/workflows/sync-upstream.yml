@@ -1,0 +1,27 @@
+name: Sync Upstream
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Runs every hour. Adjust if you want it less frequent.
+  workflow_dispatch: # Allows you to trigger it manually from the GitHub UI.
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+        with:
+          ref: main # The branch on your fork you want to update
+
+      - name: Sync upstream changes
+        uses: aormsby/Fork-Sync-With-Upstream-action@v3.4.1
+        with:
+          target_sync_branch: main
+          # Replace with the original owner/repository name
+          upstream_repository: ORIGINAL_OWNER/ORIGINAL_REPOSITORY 
+          upstream_sync_branch: main
+          target_repo_token: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub
+
+          # Set to true if you want to force overwrite local changes if a conflict occurs
+          test_mode: false
